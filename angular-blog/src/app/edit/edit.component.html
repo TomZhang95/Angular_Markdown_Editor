@@ -7,7 +7,7 @@
 <textarea style="height: 15rem;" class="form-control" placeholder="Add a body" aria-label="Add a body" aria-describedby="basic-addon" [(ngModel)]="post.body" (keyup)="check()"></textarea>
 <br>
 <div *ngIf="post">
- Last Modified: {{post.modified | data: 'long'}}
+ Last Modified: {{post.modified | date: 'long'}}
 </div>
 <br>
 <button class="btn btn-outline-danger" (click)="delete()">Delete</button>

@@ -1,16 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
+import { HttpClient, HttpHeaders} from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
-const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-};
-
-@Injectable({
-  providedIn: 'root'
-})
-
+@Injectable()
 export class Post {
   postid: number;
   created: Date;
@@ -19,18 +12,36 @@ export class Post {
   body: string;
 }
 
+@Injectable({
+  providedIn: 'root'
+})
 export class BlogService {
 
+  private httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
+        'eyJleHAiOjE1NDI3OTY5NDYsInVzciI6ImNzMTQ0IiwiaWF0IjoxN' +
+        'TQyNzg5NzQ2fQ.zO7bnnAZ6-aKTUGrvDl--G33QKjVblYLdJXcs_QJoPk'}),
+    withCredentials: true
+  };
   private posts: Post[];
   private serverURL = 'http://127.0.0.1:3000';
 
   constructor(private http: HttpClient) {
+    this.fetchPosts('cs144');
   }
 
   private handleError<T> (operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
 
       console.error(error);
+      if (error.status === 401) {
+        alert('Unauthorized!');
+      } else if (error.status === 404) {
+        alert('404 Not Found!');
+      }
+
 
       // this.log(`${operation} failed: ${error.message}`);
 
@@ -39,37 +50,27 @@ export class BlogService {
     };
   }
 
-  private errorStatus(status: number): boolean {
-    if (status === 401) {
-      alert('Unauthorized!');
-    } else if (status === 404) {
-      alert('404 Not Found!');
-    } else {
-      return true;
-    }
-    return false;
-  }
-
   fetchPosts(username: string): void {
-    const result$ = this.http.get<HttpResponse<JSON[]>>(`${this.serverURL}/api/?${username}`)
+    const result$ = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
       .pipe(
-        catchError(this.handleError<HttpResponse<JSON[]>>('FetchPosts'))
+        catchError(this.handleError<Post[]>('FetchPosts', []))
       );
-      result$.subscribe(res => {
-        if (this.errorStatus(res.status) || res.body.length === 0) {
+      result$.subscribe((res: Post[]) => {
+        if (res.length === 0) {
           return;
         }
 
-        const postsJson = JSON.parse(res.body.toString());
-        for (let i = 0; i < postsJson.length; i++) {
-          this.posts.push({
-            postid: postsJson[i].postid,
-            created: postsJson.created,
-            modified: postsJson.modified,
-            title: postsJson.title,
-            body: postsJson.body
+        const newPost = [];
+        for (let i = 0; i < res.length; i++) {
+          newPost.push({
+            postid: res[i].postid,
+            created: res[i].created,
+            modified: res[i].modified,
+            title: res[i].title,
+            body: res[i].body
           });
         }
+        this.posts = newPost;
       });
 
   }
@@ -97,13 +98,13 @@ export class BlogService {
       title: '',
       body: ''
     };
-    const result$ = this.http.post<HttpResponse<String>>
-    (`${this.serverURL}/api/${username}/${id}`, post, httpOptions)
+    const result$ = this.http.post<String>
+    (`${this.serverURL}/api/${username}/${id}`, post, this.httpOptions)
       .pipe(
-        catchError(this.handleError<HttpResponse<String>>('New Post'))
+        catchError(this.handleError<String>('New Post', ''))
       );
-    result$.subscribe(res => {
-        if (this.errorStatus(res.status)) {
+    result$.subscribe((res: String) => {
+        if (res.length === 0) {
           post = null;
         } else {
           this.posts.push(post);
@@ -122,14 +123,14 @@ export class BlogService {
     newPost.modified = new Date(Date.now());
     newPost.title = post.title;
     newPost.body = post.body;
-    const result$ = this.http.put<HttpResponse<String>>
-    (`${this.serverURL}/api/${username}/${post.postid}`, newPost, httpOptions)
+    const result$ = this.http.put<String>
+    (`${this.serverURL}/api/${username}/${post.postid}`, newPost, this.httpOptions)
       .pipe(
-        catchError(this.handleError<HttpResponse<String>>('Update Post'))
+        catchError(this.handleError<String>('Update Post', ''))
       );
 
-    result$.subscribe(res => {
-        if (this.errorStatus(res.status)) {
+    result$.subscribe((res: String) => {
+        if (res.length === 0) {
           return;
         } else {
           this.posts[index] = newPost;
@@ -143,14 +144,14 @@ export class BlogService {
     if (index === -1) {
       return;
     }
-    const result$ = this.http.delete<HttpResponse<String>>
-    (`${this.serverURL}/api/${username}/${postid}`, httpOptions)
+    const result$ = this.http.delete<String>
+    (`${this.serverURL}/api/${username}/${postid}`, this.httpOptions)
       .pipe(
-        catchError(this.handleError<HttpResponse<String>>('Delete Post'))
+        catchError(this.handleError<String>('Delete Post', ''))
       );
 
-    result$.subscribe(res => {
-        if (this.errorStatus(res.status)) {
+    result$.subscribe((res: String) => {
+        if (res.length === 0) {
           return;
         } else {
           this.posts.splice(index, 1);
