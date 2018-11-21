@@ -15,7 +15,7 @@ export class EditComponent implements OnInit {
   post: Post;
   formControl = new FormControl();
 
-  constructor(private blogService: BlogService, private router: Router, private activatedRoute) {
+  constructor(private blogService: BlogService, private router: Router, private activatedRoute: ActivatedRoute) {
     activatedRoute.params.subscribe(
       (params) => this.getPost(params['id']));
   }

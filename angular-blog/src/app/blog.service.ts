@@ -7,9 +7,6 @@ const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 };
 
-@Injectable({
-  providedIn: 'root'
-})
 
 export class Post {
   postid: number;
@@ -19,6 +16,9 @@ export class Post {
   body: string;
 }
 
+@Injectable({
+  providedIn: 'root'
+})
 export class BlogService {
 
   private posts: Post[];
