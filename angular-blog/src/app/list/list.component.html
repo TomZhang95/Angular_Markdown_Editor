@@ -1,0 +1,10 @@
+<div class="btn btn-primary btn-lg active" (click)="newPost()">New Post</div>
+<br>
+<br>
+<ul class="Post">
+ <li *ngFor="let post of posts">
+   <a routerLink="/edit/{{post.postid}}" class="btn btn-light">
+    <span class="badge badge-light">{{post.created | date: 'medium' }}</span> {{post.title}}
+  </a>
+ </li>
+</ul>
