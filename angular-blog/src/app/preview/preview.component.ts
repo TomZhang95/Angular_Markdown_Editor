@@ -22,7 +22,7 @@ export class PreviewComponent implements OnInit {
    }
 
   getPost(postid: number) {
-    this.post = new Post(this.blogService.getPost(postid));
+    this.post = this.blogService.getPost('cs144', postid);
     let reader = new Parser;
     let writer = new HtmlRenderer;
     this.bodyHtml = writer.render(reader.parse(this.post.body));

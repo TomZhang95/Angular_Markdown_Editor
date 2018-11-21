@@ -15,28 +15,28 @@ export class EditComponent implements OnInit {
   post: Post;
   formControl = new FormControl();
 
-  constructor(private blogService: BlogService, private router: Router, private activatedRoute) { 
+  constructor(private blogService: BlogService, private router: Router, private activatedRoute) {
     activatedRoute.params.subscribe(
       (params) => this.getPost(params['id']));
   }
 
   getPost(postid: number) {
-    this.post = new Post(this.blogService.getPost(postid));
+    this.post = this.blogService.getPost('cs144', postid);
     this.formControl.markAsDirty();
   }
 
   delete(): void {
-    this.blogService.updatePost(this.post);
+    this.blogService.updatePost('cs144', this.post);
     this.getPost(this.post.postid);
   }
 
   save(): void {
-    this.blogService.updatePost(this.post);
+    this.blogService.updatePost('cs144', this.post);
     this.getPost(this.post.postid);
   }
 
   preview(): void {
-    this.blogService.updatePost(this.post);
+    this.blogService.updatePost('cs144', this.post);
     this.router.navigate(['/', 'preview', this.post.postid]);
   }
 
@@ -48,13 +48,13 @@ export class EditComponent implements OnInit {
   }
 
   ngOnDestroy() {
-    if(this.post != null) {
+    if (this.post != null) {
       this.save();
     }
   }
 
   @HostListener('window:beforeunload') onUnload( ){
-    if(this.post != null) {
+    if (this.post != null) {
       this.save();
     }
   }

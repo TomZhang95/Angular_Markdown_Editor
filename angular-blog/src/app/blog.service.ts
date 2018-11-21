@@ -3,13 +3,13 @@ import { Observable, of } from 'rxjs';
 import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
-
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 };
+
+@Injectable({
+  providedIn: 'root'
+})
 
 export class Post {
   postid: number;
@@ -90,22 +90,71 @@ export class BlogService {
         id = this.posts[i].postid;
       }
     }
-    const post = {
+    let post = {
       postid: id,
       created: new Date(Date.now()),
       modified: new Date(Date.now()),
       title: '',
       body: ''
     };
-    const result$ = this.http.post<HttpResponse<String>>(`${this.serverURL}/api/${username}/${id}`, post, httpOptions)
+    const result$ = this.http.post<HttpResponse<String>>
+    (`${this.serverURL}/api/${username}/${id}`, post, httpOptions)
       .pipe(
-        catchError(this.handleError<HttpResponse<String>>('Adding Post'))
+        catchError(this.handleError<HttpResponse<String>>('New Post'))
       );
     result$.subscribe(res => {
         if (this.errorStatus(res.status)) {
-          return null;
+          post = null;
+        } else {
+          this.posts.push(post);
         }
-        return post;
+      }
+    );
+    return post;
+  }
+
+  updatePost(username: string, post: Post): void {
+    const index = this.posts.findIndex(p => p.postid === post.postid);
+    if (index === -1) {
+      return;
+    }
+    const newPost = this.posts[index];
+    newPost.modified = new Date(Date.now());
+    newPost.title = post.title;
+    newPost.body = post.body;
+    const result$ = this.http.put<HttpResponse<String>>
+    (`${this.serverURL}/api/${username}/${post.postid}`, newPost, httpOptions)
+      .pipe(
+        catchError(this.handleError<HttpResponse<String>>('Update Post'))
+      );
+
+    result$.subscribe(res => {
+        if (this.errorStatus(res.status)) {
+          return;
+        } else {
+          this.posts[index] = newPost;
+        }
+      }
+    );
+  }
+
+  deletePost(username: string, postid: number): void {
+    const index = this.posts.findIndex(p => p.postid === postid);
+    if (index === -1) {
+      return;
+    }
+    const result$ = this.http.delete<HttpResponse<String>>
+    (`${this.serverURL}/api/${username}/${postid}`, httpOptions)
+      .pipe(
+        catchError(this.handleError<HttpResponse<String>>('Delete Post'))
+      );
+
+    result$.subscribe(res => {
+        if (this.errorStatus(res.status)) {
+          return;
+        } else {
+          this.posts.splice(index, 1);
+        }
       }
     );
   }

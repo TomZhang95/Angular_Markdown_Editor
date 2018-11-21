@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
 import { Post, BlogService } from '../blog.service';
 import { Router } from '@angular/router';
 
@@ -11,21 +10,17 @@ import { Router } from '@angular/router';
 export class ListComponent implements OnInit {
   posts: Post[];
   message: any;
-  subscription: Subscription;
 
-  constructor(private blogService: BlogService, private router: Router) { 
-   this.subscription = this.blogService.getMessage().subscribe(message => {
-     this.message = message;
+  constructor(private blogService: BlogService, private router: Router) {
      this.getPosts();
-   });
   }
 
   getPosts(): void {
-    this.posts = this.blogService.getPosts();
+    this.posts = this.blogService.getPosts('cs144');
   }
 
   newPost(): void {
-    let newPost = this.blogService.newPost();
+    let newPost = this.blogService.newPost('cs144');
     this.router.navigate(['/', 'edit', newPost.postid]);
   }
 
