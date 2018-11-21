@@ -18,6 +18,7 @@ export class EditComponent implements OnInit {
   constructor(private blogService: BlogService, private router: Router, private activatedRoute: ActivatedRoute) {
     activatedRoute.params.subscribe(
       (params) => this.getPost(params['id']));
+    blogService.fetchPosts('cs144');
   }
 
   getPost(postid: number) {
@@ -53,7 +54,7 @@ export class EditComponent implements OnInit {
     }
   }
 
-  @HostListener('window:beforeunload') onUnload( ){
+  @HostListener('window:beforeunload') onUnload( ) {
     if (this.post != null) {
       this.save();
     }
