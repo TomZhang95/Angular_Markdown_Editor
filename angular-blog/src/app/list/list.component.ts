@@ -12,11 +12,15 @@ export class ListComponent implements OnInit {
   message: any;
 
   constructor(private blogService: BlogService, private router: Router) {
+     blogService.fetchPosts('cs144');
      this.getPosts();
   }
 
   getPosts(): void {
-    this.posts = this.blogService.getPosts('cs144');
+    const ret = this.blogService.getPosts('cs144');
+    ret.subscribe((res: Post[]) => {
+      this.posts = res;
+    });
   }
 
   newPost(): void {
