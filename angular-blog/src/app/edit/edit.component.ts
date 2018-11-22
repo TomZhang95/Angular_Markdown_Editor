@@ -4,13 +4,14 @@ import { HostListener } from '@angular/core';
 import { Post, BlogService } from '../blog.service';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
+import { OnDestroy } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
   selector: 'app-edit',
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
 })
-export class EditComponent implements OnInit {
+export class EditComponent implements OnInit, OnDestroy {
 
   post: Post;
   formControl = new FormControl();
@@ -26,8 +27,9 @@ export class EditComponent implements OnInit {
   }
 
   delete(): void {
-    this.blogService.updatePost('cs144', this.post);
-    this.getPost(this.post.postid);
+    this.blogService.deletePost('cs144', this.post.postid);
+    this.post = null;
+    this.router.navigate(['/']);
   }
 
   save(): void {
@@ -36,7 +38,6 @@ export class EditComponent implements OnInit {
   }
 
   preview(): void {
-    this.blogService.updatePost('cs144', this.post);
     this.router.navigate(['/', 'preview', this.post.postid]);
   }
 
