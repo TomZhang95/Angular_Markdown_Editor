@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders} from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
+
 @Injectable()
 export class Post {
   postid: number;
@@ -55,6 +56,37 @@ export class BlogService {
   }
 
   fetchPosts(username: string): void {
+    console.log(1);
+    const result$ = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
+      .pipe(
+        catchError(this.handleError<Post[]>('FetchPosts', []))
+      );
+
+      console.log(result$);
+      result$.subscribe((res: Post[]) => {
+        console.log(4);
+        if (res.length === 0) {
+          return;
+        }
+        
+        const newPost = [];
+        for (let i = 0; i < res.length; i++) {
+          newPost.push({
+            postid: res[i].postid,
+            created: res[i].created,
+            modified: res[i].modified,
+            title: res[i].title,
+            body: res[i].body
+          });
+        }
+        this.posts = newPost;
+      });
+
+  }
+
+  getPosts(username: string): Post[] {
+    console.log(3);
+    return this.posts;
     this.obsPosts = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
       .pipe(
         catchError(this.handleError<Post[]>('FetchPosts', []))
