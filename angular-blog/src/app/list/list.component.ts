@@ -17,7 +17,10 @@ export class ListComponent implements OnInit {
   }
 
   getPosts(): void {
-    this.posts = this.blogService.getPosts('cs144');
+    const ret = this.blogService.getPosts('cs144');
+    ret.subscribe((res: Post[]) => {
+      this.posts = res;
+    });
   }
 
   newPost(): void {

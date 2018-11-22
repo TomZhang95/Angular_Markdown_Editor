@@ -26,23 +26,23 @@ export class BlogService {
         'TQyNzg5NzQ2fQ.zO7bnnAZ6-aKTUGrvDl--G33QKjVblYLdJXcs_QJoPk'}),
     withCredentials: true
   };
+  private PromisePosts: Promise<Post[]>;
   private posts: Post[];
+  private obsPosts: Observable<Post[]>;
   private serverURL = 'http://localhost:3000';
-  private fetched = false;
 
   constructor(private http: HttpClient, private router: Router) {
+    this.fetchPosts('cs144');
   }
 
   private handleError<T> (operation = 'operation', result?: T, navigateUrl?: string) {
     return (error: any): Observable<T> => {
 
       console.error(error);
-      if (error.status === 401) {
-        alert('Unauthorized!');
-      } else if (error.status === 404) {
-        alert('404 Not Found!');
-      }
 
+      if (error.status === 400 || error.status === 401 || error.status === 404) {
+        alert(`Error code: ${error.status} -- ${error.error}`);
+      }
       if (navigateUrl != null) {
         this.router.navigateByUrl(navigateUrl);
       }
@@ -54,40 +54,52 @@ export class BlogService {
     };
   }
 
+//   async preFetch(username: string): Promise<Post[]> {
+//     const ret = await this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
+//       .pipe(
+//         catchError(this.handleError<Post[]>('FetchPosts', []))
+//       ).toPromise();
+//     const tmp = [];
+//     for (let i = 0; i < ret.length; i++) {
+//       tmp.push(ret[i]);
+//     }
+//     this.posts = tmp;
+//     return ret;
+// }
+
   fetchPosts(username: string): void {
-    this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
+    this.obsPosts = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
       .pipe(
         catchError(this.handleError<Post[]>('FetchPosts', []))
-      )
-      .subscribe((res: Post[]) => {
-        if (res.length === 0) {
-          return;
-        }
-
-        const newPost = [];
-        for (let i = 0; i < res.length; i++) {
-          newPost.push({
-            postid: res[i].postid,
-            created: res[i].created,
-            modified: res[i].modified,
-            title: res[i].title,
-            body: res[i].body
-          });
-        }
-        this.posts = newPost;
-        this.fetched = true;
-      });
+      );
+    this.obsPosts.subscribe((res: Post[]) => {
+      this.posts = res;
+    });
+    //   .subscribe((res: Post[]) => {
+    //   if (res.length === 0) {
+    //     return;
+    //   }
+    //   const newPosts = [];
+    //   for (let i = 0; i < res.length; i++) {
+    //     newPosts.push({
+    //       postid: res[i].postid,
+    //       created: res[i].created,
+    //       modified: res[i].modified,
+    //       title: res[i].title,
+    //       body: res[i].body
+    //     });
+    //   }
+    // });
+    // this.preFetch(username);
 
   }
 
-  getPosts(username: string): Post[] {
-    let currPosts = null;
-    if (!this.fetched) {
-      setTimeout(_ => currPosts = this.posts, 300);
-    } else {
-      currPosts = this.posts;
-    }
-    return currPosts;
+  getPosts(username: string): Observable<Post[]> {
+    // const ret = this.preFetch(username);
+    // ret.then((res: Post[]) =>
+    //   this.posts = res
+    // )
+    return this.obsPosts;
   }
 
 
@@ -102,6 +114,7 @@ export class BlogService {
         id = this.posts[i].postid;
       }
     }
+    id += 1;
     let post = {
       postid: id,
       created: new Date(Date.now()),
