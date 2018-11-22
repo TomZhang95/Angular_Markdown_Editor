@@ -32,7 +32,6 @@ export class BlogService {
   private serverURL = 'http://localhost:3000';
 
   constructor(private http: HttpClient, private router: Router) {
-    this.fetchPosts('cs144');
   }
 
   private handleError<T> (operation = 'operation', result?: T, navigateUrl?: string) {
@@ -66,6 +65,7 @@ export class BlogService {
   }
 
   getPosts(username: string): Observable<Post[]> {
+    this.fetchPosts('cs144');
     return this.obsPosts;
   }
 
@@ -92,7 +92,7 @@ export class BlogService {
     this.http.post(`${this.serverURL}/api/${username}/${id}`, newPost, this.httpOptions)
       .pipe(
         catchError(this.handleError<string>('New Post', '', '/'))
-      );
+      ).subscribe();
     this.posts.push(newPost);
     return newPost;
   }

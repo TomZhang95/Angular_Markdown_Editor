@@ -4,8 +4,10 @@ import { HostListener } from '@angular/core';
 import { Post, BlogService } from '../blog.service';
 import { Router } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
+import { ListComponent } from '../list/list.component';
 
 @Component({
+  providers: [ ListComponent ],
   selector: 'app-edit',
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
@@ -15,7 +17,8 @@ export class EditComponent implements OnInit {
   post: Post;
   formControl = new FormControl();
 
-  constructor(private blogService: BlogService, private router: Router, private activatedRoute: ActivatedRoute) {
+  constructor(private blogService: BlogService, private router: Router,
+              private activatedRoute: ActivatedRoute, private listComponent: ListComponent) {
     activatedRoute.params.subscribe(
       (params) => this.getPost(params['id']));
   }
@@ -28,15 +31,18 @@ export class EditComponent implements OnInit {
   delete(): void {
     this.blogService.deletePost('cs144', this.post.postid);
     this.getPost(this.post.postid);
+    this.listComponent.getPosts();
   }
 
   save(): void {
     this.blogService.updatePost('cs144', this.post);
     this.getPost(this.post.postid);
+    this.listComponent.getPosts();
   }
 
   preview(): void {
     this.blogService.updatePost('cs144', this.post);
+    this.listComponent.getPosts();
     this.router.navigate(['/', 'preview', this.post.postid]);
   }
 

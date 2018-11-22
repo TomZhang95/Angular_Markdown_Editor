@@ -2,7 +2,7 @@
 <br>
 <br>
 <ul class="Post" style="list-style: none; padding: 0;">
- <li class="postList" *ngFor="let post of posts"> 
+ <li class="postList" *ngFor="let post of posts$ | async">
    <a routerLink="/edit/{{post.postid}}" class="btn btn-light aLink">
     <span class="aSpan">{{post.created | date: 'medium' }}</span> 
     <span class="aSpan2">{{post.title}}</span>
