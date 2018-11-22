@@ -27,7 +27,7 @@ export class BlogService {
     withCredentials: true
   };
   private posts: Post[];
-  private serverURL = 'http://127.0.0.1:3000';
+  private serverURL = 'http://localhost:3000';
 
   constructor(private http: HttpClient) {
     this.fetchPosts('cs144');
@@ -52,15 +52,19 @@ export class BlogService {
   }
 
   fetchPosts(username: string): void {
+    console.log(1);
     const result$ = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
       .pipe(
         catchError(this.handleError<Post[]>('FetchPosts', []))
       );
+
+      console.log(result$);
       result$.subscribe((res: Post[]) => {
+        console.log(4);
         if (res.length === 0) {
           return;
         }
-
+        
         const newPost = [];
         for (let i = 0; i < res.length; i++) {
           newPost.push({
@@ -77,6 +81,7 @@ export class BlogService {
   }
 
   getPosts(username: string): Post[] {
+    console.log(3);
     return this.posts;
   }
 
