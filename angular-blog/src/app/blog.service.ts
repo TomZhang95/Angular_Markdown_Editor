@@ -28,9 +28,9 @@ export class BlogService {
   };
   private posts: Post[];
   private serverURL = 'http://localhost:3000';
+  private fetched = false;
 
   constructor(private http: HttpClient, private router: Router) {
-    this.fetchPosts('cs144');
   }
 
   private handleError<T> (operation = 'operation', result?: T, navigateUrl?: string) {
@@ -55,11 +55,11 @@ export class BlogService {
   }
 
   fetchPosts(username: string): void {
-    const result$ = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
+    this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
       .pipe(
         catchError(this.handleError<Post[]>('FetchPosts', []))
-      );
-      result$.subscribe((res: Post[]) => {
+      )
+      .subscribe((res: Post[]) => {
         if (res.length === 0) {
           return;
         }
@@ -75,12 +75,19 @@ export class BlogService {
           });
         }
         this.posts = newPost;
+        this.fetched = true;
       });
 
   }
 
   getPosts(username: string): Post[] {
-    return this.posts;
+    let currPosts = null;
+    if (!this.fetched) {
+      setTimeout(_ => currPosts = this.posts, 300);
+    } else {
+      currPosts = this.posts;
+    }
+    return currPosts;
   }
 
 
@@ -102,12 +109,12 @@ export class BlogService {
       title: '',
       body: ''
     };
-    const result$ = this.http.post<string>
+    this.http.post<string>
     (`${this.serverURL}/api/${username}/${id}`, post, this.httpOptions)
       .pipe(
         catchError(this.handleError<string>('New Post', '', '/'))
-      );
-    result$.subscribe((res: string) => {
+      )
+      .subscribe((res: string) => {
         if (res.length === 0) {
           post = null;
         } else {
@@ -127,14 +134,13 @@ export class BlogService {
     newPost.modified = new Date(Date.now());
     newPost.title = post.title;
     newPost.body = post.body;
-    const result$ = this.http.put<string>
+    this.http.put<string>
     (`${this.serverURL}/api/${username}/${post.postid}`, newPost, this.httpOptions)
       .pipe(
         catchError(this.handleError<string>('Update Post', '',
           `/edit/${this.posts[index].postid}`))
-      );
-
-    result$.subscribe((res: string) => {
+      )
+      .subscribe((res: string) => {
         if (res.length === 0) {
           return;
         } else {
@@ -149,13 +155,12 @@ export class BlogService {
     if (index === -1) {
       return;
     }
-    const result$ = this.http.delete<string>
+    this.http.delete<string>
     (`${this.serverURL}/api/${username}/${postid}`, this.httpOptions)
       .pipe(
         catchError(this.handleError<string>('Delete Post', '', '/'))
-      );
-
-    result$.subscribe((res: string) => {
+      )
+      .subscribe((res: string) => {
         if (res.length === 0) {
           return;
         } else {
