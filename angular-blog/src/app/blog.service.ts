@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders} from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class Post {
@@ -26,13 +27,13 @@ export class BlogService {
     withCredentials: true
   };
   private posts: Post[];
-  private serverURL = 'http://127.0.0.1:3000';
+  private serverURL = 'http://localhost:3000';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     this.fetchPosts('cs144');
   }
 
-  private handleError<T> (operation = 'operation', result?: T) {
+  private handleError<T> (operation = 'operation', result?: T, navigateUrl?: string) {
     return (error: any): Observable<T> => {
 
       console.error(error);
@@ -42,6 +43,9 @@ export class BlogService {
         alert('404 Not Found!');
       }
 
+      if (navigateUrl != null) {
+        this.router.navigateByUrl(navigateUrl);
+      }
 
       // this.log(`${operation} failed: ${error.message}`);
 
@@ -98,12 +102,12 @@ export class BlogService {
       title: '',
       body: ''
     };
-    const result$ = this.http.post<String>
+    const result$ = this.http.post<string>
     (`${this.serverURL}/api/${username}/${id}`, post, this.httpOptions)
       .pipe(
-        catchError(this.handleError<String>('New Post', ''))
+        catchError(this.handleError<string>('New Post', '', '/'))
       );
-    result$.subscribe((res: String) => {
+    result$.subscribe((res: string) => {
         if (res.length === 0) {
           post = null;
         } else {
@@ -123,13 +127,14 @@ export class BlogService {
     newPost.modified = new Date(Date.now());
     newPost.title = post.title;
     newPost.body = post.body;
-    const result$ = this.http.put<String>
+    const result$ = this.http.put<string>
     (`${this.serverURL}/api/${username}/${post.postid}`, newPost, this.httpOptions)
       .pipe(
-        catchError(this.handleError<String>('Update Post', ''))
+        catchError(this.handleError<string>('Update Post', '',
+          `/edit/${this.posts[index].postid}`))
       );
 
-    result$.subscribe((res: String) => {
+    result$.subscribe((res: string) => {
         if (res.length === 0) {
           return;
         } else {
@@ -144,13 +149,13 @@ export class BlogService {
     if (index === -1) {
       return;
     }
-    const result$ = this.http.delete<String>
+    const result$ = this.http.delete<string>
     (`${this.serverURL}/api/${username}/${postid}`, this.httpOptions)
       .pipe(
-        catchError(this.handleError<String>('Delete Post', ''))
+        catchError(this.handleError<string>('Delete Post', '', '/'))
       );
 
-    result$.subscribe((res: String) => {
+    result$.subscribe((res: string) => {
         if (res.length === 0) {
           return;
         } else {
