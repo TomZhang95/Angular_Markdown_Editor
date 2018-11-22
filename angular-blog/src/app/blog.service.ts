@@ -26,7 +26,7 @@ export class BlogService {
         'TQyNzg5NzQ2fQ.zO7bnnAZ6-aKTUGrvDl--G33QKjVblYLdJXcs_QJoPk'}),
     withCredentials: true
   };
-  private PromisePosts: Promise<Post[]>;
+
   private posts: Post[];
   private obsPosts: Observable<Post[]>;
   private serverURL = 'http://localhost:3000';
@@ -73,7 +73,8 @@ export class BlogService {
         catchError(this.handleError<Post[]>('FetchPosts', []))
       );
     this.obsPosts.subscribe((res: Post[]) => {
-      this.posts = res;
+      const arr = res;
+      this.posts = arr;
     });
     //   .subscribe((res: Post[]) => {
     //   if (res.length === 0) {
@@ -104,7 +105,7 @@ export class BlogService {
 
 
   getPost(username: string, id: number): Post {
-    return this.posts.find(post => post.postid === id);
+    return this.posts.find(p => p.postid.toString() === id.toString());
   }
 
   newPost(username: string): Post {
