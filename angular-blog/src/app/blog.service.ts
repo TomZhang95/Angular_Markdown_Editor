@@ -41,7 +41,7 @@ export class BlogService {
       console.error(error);
 
       if (error.status === 400 || error.status === 401 || error.status === 404) {
-        alert(`Error code: ${error.status} -- ${error.error}`);
+        alert(`${operation} Error!\nError code: ${error.status} -- ${error.error}`);
       }
       if (navigateUrl != null) {
         this.router.navigateByUrl(navigateUrl);
@@ -54,19 +54,6 @@ export class BlogService {
     };
   }
 
-//   async preFetch(username: string): Promise<Post[]> {
-//     const ret = await this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
-//       .pipe(
-//         catchError(this.handleError<Post[]>('FetchPosts', []))
-//       ).toPromise();
-//     const tmp = [];
-//     for (let i = 0; i < ret.length; i++) {
-//       tmp.push(ret[i]);
-//     }
-//     this.posts = tmp;
-//     return ret;
-// }
-
   fetchPosts(username: string): void {
     this.obsPosts = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
       .pipe(
@@ -76,30 +63,9 @@ export class BlogService {
       const arr = res;
       this.posts = arr;
     });
-    //   .subscribe((res: Post[]) => {
-    //   if (res.length === 0) {
-    //     return;
-    //   }
-    //   const newPosts = [];
-    //   for (let i = 0; i < res.length; i++) {
-    //     newPosts.push({
-    //       postid: res[i].postid,
-    //       created: res[i].created,
-    //       modified: res[i].modified,
-    //       title: res[i].title,
-    //       body: res[i].body
-    //     });
-    //   }
-    // });
-    // this.preFetch(username);
-
   }
 
   getPosts(username: string): Observable<Post[]> {
-    // const ret = this.preFetch(username);
-    // ret.then((res: Post[]) =>
-    //   this.posts = res
-    // )
     return this.obsPosts;
   }
 
@@ -116,27 +82,19 @@ export class BlogService {
       }
     }
     id += 1;
-    let post = {
+    const newPost = {
       postid: id,
       created: new Date(Date.now()),
       modified: new Date(Date.now()),
       title: '',
       body: ''
     };
-    this.http.post<string>
-    (`${this.serverURL}/api/${username}/${id}`, post, this.httpOptions)
+    this.http.post(`${this.serverURL}/api/${username}/${id}`, newPost, this.httpOptions)
       .pipe(
         catchError(this.handleError<string>('New Post', '', '/'))
-      )
-      .subscribe((res: string) => {
-        if (res.length === 0) {
-          post = null;
-        } else {
-          this.posts.push(post);
-        }
-      }
-    );
-    return post;
+      );
+    this.posts.push(newPost);
+    return newPost;
   }
 
   updatePost(username: string, post: Post): void {
@@ -175,9 +133,11 @@ export class BlogService {
         catchError(this.handleError<string>('Delete Post', '', '/'))
       )
       .subscribe((res: string) => {
-        if (res.length === 0) {
+        if (res != null) {
           return;
         } else {
+          alert('Delete Success!');
+          this.router.navigateByUrl('/');
           this.posts.splice(index, 1);
         }
       }

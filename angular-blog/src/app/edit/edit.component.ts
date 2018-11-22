@@ -26,7 +26,7 @@ export class EditComponent implements OnInit {
   }
 
   delete(): void {
-    this.blogService.updatePost('cs144', this.post);
+    this.blogService.deletePost('cs144', this.post.postid);
     this.getPost(this.post.postid);
   }
 

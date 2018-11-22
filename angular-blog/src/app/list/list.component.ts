@@ -12,7 +12,6 @@ export class ListComponent implements OnInit {
   message: any;
 
   constructor(private blogService: BlogService, private router: Router) {
-     blogService.fetchPosts('cs144');
      this.getPosts();
   }
 
