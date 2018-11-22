@@ -5,7 +5,6 @@ import { PreviewComponent } from './preview/preview.component';
 import { ListComponent} from './list/list.component';
 
 const routes: Routes = [
-  { path: '', component: ListComponent },
   { path: 'edit/:id', component: EditComponent },
   { path: 'preview/:id', component: PreviewComponent }
 ];
