@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { HttpClient, HttpHeaders} from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
 
-@Injectable()
+
 export class Post {
   postid: number;
   created: Date;
@@ -13,136 +9,232 @@ export class Post {
   body: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class BlogService {
 
-  private httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-        'eyJleHAiOjE1NDI3OTY5NDYsInVzciI6ImNzMTQ0IiwiaWF0IjoxN' +
-        'TQyNzg5NzQ2fQ.zO7bnnAZ6-aKTUGrvDl--G33QKjVblYLdJXcs_QJoPk'}),
-    withCredentials: true
-  };
+	private posts: Post[];
+	private nextPostID: number;
+	private username = 'cs144';
+	private readonly postsKey = "posts";
+	private readonly nextPostIDKey = "nextPostID";
+	private readonly urlBase = "http://localhost:3000/api/";
 
-  private posts: Post[];
-  private obsPosts: Observable<Post[]>;
-  private serverURL = 'http://localhost:3000';
+	constructor() { 
 
-  constructor(private http: HttpClient, private router: Router) {
-    this.fetchPosts('cs144');
-  }
+		console.log("constructor for blogservice");
 
-  private handleError<T> (operation = 'operation', result?: T, navigateUrl?: string) {
-    return (error: any): Observable<T> => {
+		// get the username from the jwt token
+		// this.getUsernameFromJWT();
+		// get all posts from localStorage
+		this.fetchPosts();
+		// get the next valid postID
+		this.fetchNextPostID();
+	}
 
-      console.error(error);
+	// REQUIRED FUNCTIONS
 
-      if (error.status === 400 || error.status === 401 || error.status === 404) {
-        alert(`${operation} Error!\nError code: ${error.status} -- ${error.error}`);
-      }
-      if (navigateUrl != null) {
-        this.router.navigateByUrl(navigateUrl);
-      }
+	fetchPosts(): void {
+		this.posts = [];
+		// remember "this" for the callback functino
+		let self = this;
+		// GET all posts from api
+		let xhr = new XMLHttpRequest();
+		// this function is called when state changes to process the response
+		xhr.onreadystatechange = function() {
+		    if (xhr.readyState == XMLHttpRequest.DONE) {
+		    	// posts will be empty if no posts, else it will be populated
+		    	let response = JSON.parse(xhr.responseText);
+		        // create Post objects and add to this.posts
+		        for (let i = 0; i < response.length; i++) {
+		        	let currPost = {
+		        		postid: response[i].postid,
+		        		created: new Date(response[i].created),
+		        		modified: new Date(response[i].modified),
+		        		title: response[i].title,
+		        		body: response[i].body
+		        	};
+		        	self.posts.push(currPost);
+		        }
+		    }
+		};
+		let url = this.urlBase + this.username;
+		// make async request
+		xhr.open('GET', url, true);
+		xhr.send();
+	}
 
-      // this.log(`${operation} failed: ${error.message}`);
 
-      // Let the app keep running by returning an empty result.
-      return of(result as T);
-    };
-  }
+	getPosts(): Post[] {
+		return this.posts;
+	}
 
-  fetchPosts(username: string): void {
-    this.obsPosts = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<Post[]>('FetchPosts', []))
-      );
-    this.obsPosts.subscribe((res: Post[]) => {
-      const arr = res;
-      this.posts = arr;
-    });
-  }
+	getPost(id: number): Post {
+		let postIndex = this.getPostIndex(id);
+		// return null if we can't find post with this id
+		return (postIndex != -1) ? this.posts[postIndex] : null;
+	}
 
-  getPosts(username: string): Observable<Post[]> {
-    return this.obsPosts;
-  }
+	newPost(): Post {
+		// create new post
+		let newPost = {
+		    postid: this.nextPostID,
+		    created: new Date(),
+		    modified: new Date(),
+		    title: "",
+		    body: ""
+	  	};
 
+	  	// add to posts member variable
+		this.posts.push(newPost);
+		// remember "this" for the callback functino
+	  	let self = this;
+	  	// send POST request to api
+		let xhr = new XMLHttpRequest();
+		// this function is called when state changes to process the response
+		xhr.onreadystatechange = function() {
+		    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 201) {
+		        // request completed successfully
+		        console.log("new post created successfully");
+		        // increment nextPostID
+				self.updateNextPostID();
+		    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 201) {
+		    	// error creating post at the server, so delete the post
+		    	self.deleteFromPosts(newPost.postid);
+		    	window.alert("ERROR: could not create post at the server");
+		    	// navigate to list view of edit page
+		    	window.location.href = "http://localhost:3000/edit/";
+		    }
+		}
+		let url = this.urlBase + this.username + "/" + (this.nextPostID).toString();
+		console.log("new post url:", url);
 
-  getPost(username: string, id: number): Post {
-    return this.posts.find(p => p.postid.toString() === id.toString());
-  }
+		xhr.open("POST", url, true);
 
-  newPost(username: string): Post {
-    let id = 0;
-    for (let i = 0; i < this.posts.length; i++) {
-      if (this.posts[i].postid > id) {
-        id = this.posts[i].postid;
-      }
-    }
-    id += 1;
-    const newPost = {
-      postid: id,
-      created: new Date(Date.now()),
-      modified: new Date(Date.now()),
-      title: '',
-      body: ''
-    };
-    this.http.post(`${this.serverURL}/api/${username}/${id}`, newPost, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<string>('New Post', '', '/'))
-      ).subscribe();
-    this.posts.push(newPost);
-    return newPost;
-  }
+		// send the proper header information along with the request
+		xhr.setRequestHeader("Content-type", "application/json");
+		console.log("new post JSON", JSON.stringify(newPost));
 
-  updatePost(username: string, post: Post): void {
-    const index = this.posts.findIndex(p => p.postid === post.postid);
-    if (index === -1) {
-      return;
-    }
-    const newPost = this.posts[index];
-    newPost.modified = new Date(Date.now());
-    newPost.title = post.title;
-    newPost.body = post.body;
-    this.http.put<string>
-    (`${this.serverURL}/api/${username}/${post.postid}`, newPost, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<string>('Update Post', '',
-          `/edit/${this.posts[index].postid}`))
-      )
-      .subscribe((res: string) => {
-        if (res.length === 0) {
-          return;
-        } else {
-          this.posts[index] = newPost;
-        }
-      }
-    );
-  }
+		xhr.send(JSON.stringify(newPost)); 
+		// return the new post
+		return newPost;
+	}
 
-  deletePost(username: string, postid: number): void {
-    const index = this.posts.findIndex(p => p.postid === postid);
-    if (index === -1) {
-      return;
-    }
-    this.http.delete<string>
-    (`${this.serverURL}/api/${username}/${postid}`, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<string>('Delete Post', '', '/'))
-      )
-      .subscribe((res: string) => {
-        if (res != null) {
-          return;
-        } else {
-          alert('Delete Success!');
-          this.router.navigateByUrl('/');
-          this.posts.splice(index, 1);
-        }
-      }
-    );
-  }
+	updatePost(post: Post): void {
+		let postIndex = this.getPostIndex(post.postid);
+		if (postIndex != -1) {
+			this.posts[postIndex].title = post.title;
+			this.posts[postIndex].body = post.body;
+			this.posts[postIndex].modified = new Date();
+			// remember "this" for the callback functino
+			let self = this;
+			// update post in Mongo by sending PUT request to api
+			let xhr = new XMLHttpRequest();
+			// this function is called when state changes to process the response
+			xhr.onreadystatechange = function() {
+			    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+			        // post updated successfully
+			        console.log("post updated successfully");
+			    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 200) {
+			    	// error updating post at the server
+			    	window.alert("ERROR: could not update post at the server");
+			    	// navigate to edit view of post
+		    		window.location.href = "http://localhost:3000/edit/#/edit/" + (self.posts[postIndex].postid).toString();
+			    }
+			}
+			let url = this.urlBase + this.username + "/" + (this.posts[postIndex].postid).toString();
+			console.log("update post url:", url);
 
+			xhr.open("PUT", url, true);
+
+			// send the proper header information along with the request
+			xhr.setRequestHeader("Content-type", "application/json");
+			console.log("updated post JSON", JSON.stringify(this.posts[postIndex]));
+
+			xhr.send(JSON.stringify(this.posts[postIndex])); 
+		}
+	}
+
+	deletePost(postid: number): void {
+		let postIndex = this.getPostIndex(postid);
+		if (postIndex != -1) {
+	  		// remember "this" for the callback functino
+			let self = this;
+			// update post in Mongo by sending PUT request to api
+			let xhr = new XMLHttpRequest();
+			// this function is called when state changes to process the response
+			xhr.onreadystatechange = function() {
+			    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 204) {
+			        // post deleted successfully
+			        console.log("post deleted successfully");
+			    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 204) {
+			    	// error updating post at the server
+			    	window.alert("ERROR: could not delete post at the server");
+			    	// navigate to list view of edit page
+		    		window.location.href = "http://localhost:3000/edit/";
+			    }
+			}
+			let url = this.urlBase + this.username + "/" + (this.posts[postIndex].postid).toString();
+			console.log("delete post url:", url);
+
+			// delete from posts and Mongo
+			this.posts.splice(postIndex, 1);
+
+			xhr.open("DELETE", url, true);
+			xhr.send(); 
+		}
+	}
+
+	// END OF REQUIRED FUNCTIONS
+
+	getPostIndex(id: number): number {
+		for (let i = 0; i < this.posts.length; i++) {
+		    if (this.posts[i].postid == id) {
+		    	return i;
+		    }
+		}
+		// couldn't find post with this id
+		return -1;
+	}
+
+	// TODO: MODIFY THIS FOR PROJECT 4
+	fetchNextPostID(): void {
+		// get last postid from Mongo, then increment and assign to member var
+		// remember "this" for the callback functino
+		var self = this;
+		let xhr = new XMLHttpRequest();
+		// this function is called when state changes to process the response
+		xhr.onreadystatechange = function() {
+		    if (xhr.readyState == XMLHttpRequest.DONE) {
+		    	let lastUsedPostID = JSON.parse(xhr.responseText);
+		        console.log("fetchNextPostID lastUsedPostID", lastUsedPostID);
+		        self.nextPostID = lastUsedPostID + 1;
+		    }
+		};
+		let url = this.urlBase + "lastused/postid/" + this.username;
+		// make async request
+		xhr.open('GET', url, true);
+		xhr.send();
+	}
+
+	getNextPostID(): number {
+		return this.nextPostID;
+	}
+
+	// TODO: MODIFY THIS FOR PROJECT 4
+	updateNextPostID(): void {
+		// TODO: increment nextPostID and store in Mongo
+		this.nextPostID = this.nextPostID + 1;
+	}
+
+	deleteFromPosts(postid: number): void {
+		// delete the post from posts only (not the server)
+		let postIndex = this.getPostIndex(postid);
+		if (postIndex != -1) {
+			// delete from posts and localStorage
+			this.posts.splice(postIndex, 1);
+		}
+	}
+
+	// FUNCTIONS NEEDED FOR PROJECT 4 PART E
 
 }

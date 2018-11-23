@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+
 import { Post, BlogService } from '../blog.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-list',
@@ -8,27 +9,22 @@ import { Router } from '@angular/router';
   styleUrls: ['./list.component.css']
 })
 export class ListComponent implements OnInit {
-  posts: Post[];
-  message: any;
 
-  constructor(private blogService: BlogService, private router: Router) {
-     this.getPosts();
-  }
+	private posts: Post[];
 
-  getPosts(): void {
-    const ret = this.blogService.getPosts('cs144');
-    ret.subscribe((res: Post[]) => {
-      this.posts = res;
-    });
-  }
+	constructor(private router: Router,
+	    private activatedRoute: ActivatedRoute,
+	    private blogService: BlogService) {}
 
-  newPost(): void {
-    let newPost = this.blogService.newPost('cs144');
-    this.router.navigate(['/', 'edit', newPost.postid]);
-  }
+	ngOnInit() {
+		this.posts = this.blogService.getPosts();
+	}
 
-  ngOnInit() {
-    this.getPosts();
-  }
+	newPost(): void {
+		let newPost = this.blogService.newPost();
+		// open edit view for the new post
+		let newPostID = newPost.postid;
+		this.router.navigate(['/edit/' + newPostID.toString()]);
+	}
 
 }

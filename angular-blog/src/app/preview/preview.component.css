@@ -1,0 +1,45 @@
+#preview-container {
+    font-family: 'OpenSans-Regular';
+    width: 50%;
+    height: 100%;
+    float: left;
+    text-align: center;
+  
+    /*border-left: 5px solid gray;*/
+  }
+  
+  #preview-header {
+    font-family: 'IndyPimp-Bold';
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .button-style {
+    margin: 10px;
+    margin-bottom: 5px;
+    font-size: 20px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #83b7c7;
+    color: #ffffff;
+  }
+  
+  .button-style:hover {
+    background-color: #91c1d0;
+  }
+  
+  #markdown-container {
+    width: 50%;
+    text-align: center;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 5px 30px;
+    margin-top: 10px;
+    border-radius: 5px;
+  }
+  
+  #markdown-container {
+    text-align: left;
+  }
+  
