@@ -6,7 +6,12 @@
   }
   
   #posts-container {
-    text-align: center;
+      border: 1px solid black;
+
+      text-align: center;
+      width: 70%;
+      margin: 0 auto;
+      border-radius: 10px 10px 0 0;
   }
   
   #list-header {
@@ -16,22 +21,28 @@
   }
   
   #new-post-button {
+    width: 100px;
+    height: 30px;
     margin: 10px;
     margin-bottom: 5px;
-    font-size: 20px;
+    font-size: 10px;
     padding: 5px 10px;
     border-radius: 5px;
     text-align: center;
-    background-color: #83b7c7;
+    background-color: #466670;
     color: #ffffff;
   }
   
   #new-post-button:hover {
-    background-color: #91c1d0;
+    background-color: #0d2b35;
   }
   
   #post-container {
-    width: 75%;
+      border: 1px solid black;
+      border-radius: 0 0 10px 10px;
+    width: 70%;
+    max-height: 500px;
+    overflow: scroll;
     text-align: center;
     margin: 0 auto;
   }
@@ -59,7 +70,7 @@
   }
   
   #postList a:hover {
-    background-color: #f8f9f9;
+    background-color: #87e06c;
   }
   
   
@@ -67,17 +78,17 @@
     display: inline-block;
     font-size: 14px;
     vertical-align: middle;
-    color: white;
+    color: rgb(22, 19, 19);
     padding: 10px 10px;
-    background-color: #83b7c7;
+    background-color: #58ee85;
     width: 35%;
-    text-align: right;
+    text-align: center;
     border-radius: 5px;
     overflow: visible;
     white-space: normal;
   }
   
   #postList .tit {
-    padding: 5px 5px;
+    padding: 15px 5px;
   }
   

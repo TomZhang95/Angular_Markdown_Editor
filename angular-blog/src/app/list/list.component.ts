@@ -12,8 +12,7 @@ export class ListComponent implements OnInit {
 
 	private posts: Post[];
 
-	constructor(private router: Router,
-	    private activatedRoute: ActivatedRoute,
+	constructor(private router: Router, private activatedRoute: ActivatedRoute,
 	    private blogService: BlogService) {}
 
 	ngOnInit() {
@@ -22,7 +21,6 @@ export class ListComponent implements OnInit {
 
 	newPost(): void {
 		let newPost = this.blogService.newPost();
-		// open edit view for the new post
 		let newPostID = newPost.postid;
 		this.router.navigate(['/edit/' + newPostID.toString()]);
 	}

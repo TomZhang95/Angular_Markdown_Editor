@@ -1,8 +1,8 @@
 <div *ngIf="post">
     <div id="edit-container">
       <h3 id="edit-header">Edit Post</h3>
-  
-      <form [formGroup]="editPostForm">
+      <hr>
+      <form [formGroup]="myEditPostForm">
         <div id="edit-post-form">
           <h4 class="input-header"> Title: </h4>
           <input type="text" id="title" class="form-control" formControlName="title" [(ngModel)]="post.title">
@@ -14,7 +14,7 @@
           <button type="button" class="btn button-style" id="deleteButton" (click)="delete()">
               <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
           </button>
-          <button type="button" class="btn button-style" id="saveButton" (click)="save()" [disabled]="editPostForm.pristine">
+          <button type="button" class="btn button-style" id="saveButton" (click)="save()" [disabled]="myEditPostForm.pristine">
               <i class="fa fa-floppy-o" aria-hidden="true"></i> Save
           </button>
           <button type="button" class="btn button-style" id="previewButton" (click)="preview()">
