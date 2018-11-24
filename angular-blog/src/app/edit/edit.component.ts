@@ -1,68 +1,58 @@
-import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { HostListener } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+
 import { Post, BlogService } from '../blog.service';
-import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
-import { ListComponent } from '../list/list.component';
 
 @Component({
-  providers: [ ListComponent ],
   selector: 'app-edit',
   templateUrl: './edit.component.html',
   styleUrls: ['./edit.component.css']
 })
 export class EditComponent implements OnInit {
 
-  post: Post;
-  formControl = new FormControl();
+	private post: Post;
+	private myEditPostForm = new FormGroup({
+		title: new FormControl(),
+		body: new FormControl()
+	});
 
-  constructor(private blogService: BlogService, private router: Router,
-              private activatedRoute: ActivatedRoute, private listComponent: ListComponent) {
-    activatedRoute.params.subscribe(
-      (params) => this.getPost(params['id']));
-  }
+	constructor(private router: Router, private activatedRoute: ActivatedRoute,
+	    private blogService: BlogService) {}
 
-  getPost(postid: number) {
-    this.post = this.blogService.getPost('cs144', postid);
-    this.formControl.markAsDirty();
-  }
+	ngOnInit() {
+		this.activatedRoute.params.subscribe(() => this.getPost());
+	}
 
-  delete(): void {
-    this.blogService.deletePost('cs144', this.post.postid);
-    this.getPost(this.post.postid);
-    this.listComponent.getPosts();
-  }
+	get title(): string {
+		return String(this.myEditPostForm.get('title'));
+  	}
 
-  save(): void {
-    this.blogService.updatePost('cs144', this.post);
-    this.getPost(this.post.postid);
-    this.listComponent.getPosts();
-  }
+  	get body(): string {
+		return String(this.myEditPostForm.get('body'));
+  	}
 
-  preview(): void {
-    this.blogService.updatePost('cs144', this.post);
-    this.listComponent.getPosts();
-    this.router.navigate(['/', 'preview', this.post.postid]);
-  }
+	delete(): void {
+		this.blogService.deletePost(this.post.postid);
+		this.router.navigate(['/']);
+	}
 
-  check(): void {
-    this.formControl.markAsPristine();
-  }
+	@HostListener('window:beforeunload')
+	save(): void {
+		this.blogService.updatePost(this.post);
+		this.myEditPostForm.markAsPristine();
+	}
 
-  ngOnInit() {
-  }
+	preview(): void {
+		if (this.myEditPostForm.dirty) {
+			this.save();
+		}
+		this.router.navigateByUrl('/preview/' + this.post.postid);
+	}
 
-  ngOnDestroy() {
-    if (this.post != null) {
-      this.save();
-    }
-  }
-
-  @HostListener('window:beforeunload') onUnload( ) {
-    if (this.post != null) {
-      this.save();
-    }
-  }
+	getPost(): void {
+		let postid = this.activatedRoute.snapshot.paramMap.get('id');
+		this.post = this.blogService.getPost(Number(postid));
+	}
 
 }

@@ -1,0 +1,62 @@
+#edit-container {
+    border: 1px solid black;
+    border-radius: 10px;
+    font-family: 'OpenSans-Regular';
+    width: 45%;
+    height: 100%;
+    float: left;
+    text-align: center;
+    padding-top: 40px;
+    /*border-left: 5px solid gray;*/
+  }
+  
+  #edit-header {
+    font-family: 'IndyPimp-Bold';
+    font-size: 2rem;
+    margin-bottom: 10px;
+    width: 60%;
+    margin: 0 auto;
+  }
+  
+  #edit-post-form {
+    width: 60%;
+    margin: 0 auto;
+  }
+  
+  .input-header {
+    text-align: left;
+    margin-bottom: 5px;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  textarea {
+    height: 100px;
+  }
+  
+  .button-style {
+    width: 100px;
+    height: 30px;
+    margin: 10px;
+    margin-bottom: 5px;
+    font-size: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #466670;
+    color: #ffffff;
+  }
+  
+  .button-style:hover {
+    background-color: #0a4621;
+  }
+  
+  #saveButton:disabled {
+    background-color: #c1dbe3;
+  }
+  

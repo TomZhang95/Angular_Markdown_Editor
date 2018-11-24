@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+
 import { Post, BlogService } from '../blog.service';
-import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-list',
@@ -9,25 +9,20 @@ import { Observable } from 'rxjs';
   styleUrls: ['./list.component.css']
 })
 export class ListComponent implements OnInit {
-  posts$: Observable<Post[]>;
-  message: any;
 
-  constructor(private blogService: BlogService, private router: Router) {
-     this.getPosts();
-  }
+	private posts: Post[];
 
-  getPosts(): void {
-    this.posts$ = this.blogService.getPosts('cs144').pipe();
-  }
+	constructor(private router: Router, private activatedRoute: ActivatedRoute,
+	    private blogService: BlogService) {}
 
-  newPost(): void {
-    let newPost = this.blogService.newPost('cs144');
-    this.router.navigate(['/', 'edit', newPost.postid]);
-    this.getPosts();
-  }
+	ngOnInit() {
+		this.posts = this.blogService.getPosts();
+	}
 
-  ngOnInit() {
-    this.getPosts();
-  }
+	newPost(): void {
+		let newPost = this.blogService.newPost();
+		let newPostID = newPost.postid;
+		this.router.navigate(['/edit/' + newPostID.toString()]);
+	}
 
 }

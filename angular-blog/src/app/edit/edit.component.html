@@ -1,15 +1,27 @@
-<label>Title</label>
-<br>
-<input type="text" class="form-control" placeholder="Add a title" aria-label="Add a title" aria-describedby="basic-addon" [(ngModel)]="post.title" (keyup)="check()"/>
-<br>
-<label>Body</label>
-<br>
-<textarea style="height: 15rem;" class="form-control" placeholder="Add a body" aria-label="Add a body" aria-describedby="basic-addon" [(ngModel)]="post.body" (keyup)="check()"></textarea>
-<br>
 <div *ngIf="post">
- Last Modified: {{post.modified | date: 'long'}}
-</div>
-<br>
-<button class="btn btn-outline-danger" (click)="delete()">Delete</button>
-<button class="btn btn-outline-success" (click)="save()" [disabled]="formControl.dirty">Save</button>
-<button class="btn btn-outline-warning" (click)="preview()">Preview</button>
+    <div id="edit-container">
+      <h3 id="edit-header">Edit Post</h3>
+      <hr>
+      <form [formGroup]="myEditPostForm">
+        <div id="edit-post-form">
+          <h4 class="input-header"> Title: </h4>
+          <input type="text" id="title" class="form-control" formControlName="title" [(ngModel)]="post.title">
+          <h4 class="input-header"> Body: </h4>
+          <textarea id="body" class="form-control" formControlName="body" [(ngModel)]="post.body"></textarea>
+          <p> Last modified: {{post.modified | date: 'medium'}}</p> 
+        </div>
+        <div class="edit-button-row">
+          <button type="button" class="btn button-style" id="deleteButton" (click)="delete()">
+              <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
+          </button>
+          <button type="button" class="btn button-style" id="saveButton" (click)="save()" [disabled]="myEditPostForm.pristine">
+              <i class="fa fa-floppy-o" aria-hidden="true"></i> Save
+          </button>
+          <button type="button" class="btn button-style" id="previewButton" (click)="preview()">
+              <i class="fa fa-eye" aria-hidden="true"></i> Preview
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  

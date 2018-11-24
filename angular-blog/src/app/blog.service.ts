@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { HttpClient, HttpHeaders} from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
-import { Router } from '@angular/router';
 
-@Injectable()
+
 export class Post {
   postid: number;
   created: Date;
@@ -13,137 +9,169 @@ export class Post {
   body: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class BlogService {
 
-  private httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-        'eyJleHAiOjE1NDI3OTY5NDYsInVzciI6ImNzMTQ0IiwiaWF0IjoxN' +
-        'TQyNzg5NzQ2fQ.zO7bnnAZ6-aKTUGrvDl--G33QKjVblYLdJXcs_QJoPk'}),
-    withCredentials: true
-  };
+	private posts: Post[];
+	private nextPostID: number;
+	private username = 'cs144';
+	private readonly postsKey = "posts";
+	private readonly nextPostIDKey = "nextPostID";
+	private readonly urlBase = "http://localhost:3000/api/";
 
-  private posts: Post[];
-  private obsPosts: Observable<Post[]>;
-  private serverURL = 'http://localhost:3000';
+	constructor() { 
+    this.getUsernameFromCookie();
+		this.fetchPosts();
+	}
 
-  constructor(private http: HttpClient, private router: Router) {
-  }
-
-  private handleError<T> (operation = 'operation', result?: T, navigateUrl?: string) {
-    return (error: any): Observable<T> => {
-
-      console.error(error);
-
-      if (error.status === 400 || error.status === 401 || error.status === 404) {
-        alert(`${operation} Error!\nError code: ${error.status} -- ${error.error}`);
-      }
-      if (navigateUrl != null) {
-        this.router.navigateByUrl(navigateUrl);
-      }
-
-      // this.log(`${operation} failed: ${error.message}`);
-
-      // Let the app keep running by returning an empty result.
-      return of(result as T);
-    };
-  }
-
-  fetchPosts(username: string): void {
-    this.obsPosts = this.http.get<Post[]>(`${this.serverURL}/api/${username}`, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<Post[]>('FetchPosts', []))
-      );
-    this.obsPosts.subscribe((res: Post[]) => {
-      const arr = res;
-      this.posts = arr;
-    });
-  }
-
-  getPosts(username: string): Observable<Post[]> {
-    this.fetchPosts('cs144');
-    return this.obsPosts;
-  }
-
-
-  getPost(username: string, id: number): Post {
-    return this.posts.find(p => p.postid.toString() === id.toString());
-  }
-
-  newPost(username: string): Post {
-    let id = 0;
-    for (let i = 0; i < this.posts.length; i++) {
-      if (this.posts[i].postid > id) {
-        id = this.posts[i].postid;
-      }
-    }
-    id += 1;
-    const newPost = {
-      postid: id,
-      created: new Date(Date.now()),
-      modified: new Date(Date.now()),
-      title: '',
-      body: ''
-    };
-    this.http.post(`${this.serverURL}/api/${username}/${id}`, newPost, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<string>('New Post', '', '/'))
-      ).subscribe();
-    this.posts.push(newPost);
-    return newPost;
-  }
-
-  updatePost(username: string, post: Post): void {
-    const index = this.posts.findIndex(p => p.postid === post.postid);
-    if (index === -1) {
-      return;
-    }
-    const newPost = this.posts[index];
-    newPost.modified = new Date(Date.now());
-    newPost.title = post.title;
-    newPost.body = post.body;
-    this.http.put<string>
-    (`${this.serverURL}/api/${username}/${post.postid}`, newPost, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<string>('Update Post', '',
-          `/edit/${this.posts[index].postid}`))
-      )
-      .subscribe((res: string) => {
-        if (res.length === 0) {
-          return;
-        } else {
-          this.posts[index] = newPost;
+	fetchPosts(): void {
+		this.posts = [];
+		let self = this;
+		let xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+		    if (xhr.readyState == XMLHttpRequest.DONE) {
+          let nextPostID = 1;
+		    	let response = JSON.parse(xhr.responseText);
+		        for (let i = 0; i < response.length; i++) {
+		        	let currPost = {
+		        		postid: response[i].postid,
+		        		created: new Date(response[i].created),
+		        		modified: new Date(response[i].modified),
+		        		title: response[i].title,
+		        		body: response[i].body
+              };
+              if(response[i].postid >= nextPostID) {
+                nextPostID = response[i].postid + 1;
+              }
+              self.posts.push(currPost);
+            }
+            self.nextPostID = nextPostID;
         }
-      }
-    );
-  }
+    };
+		let url = this.urlBase + this.username;
+		xhr.open('GET', url, true);
+		xhr.send();
+	}
 
-  deletePost(username: string, postid: number): void {
-    const index = this.posts.findIndex(p => p.postid === postid);
-    if (index === -1) {
-      return;
+
+	getPosts(): Post[] {
+		return this.posts;
+	}
+
+	getPost(id: number): Post {
+		let postIndex = this.getPostIndex(id);
+		return (postIndex != -1) ? this.posts[postIndex] : null;
+	}
+
+	newPost(): Post {
+		let newPost = {
+		    postid: this.nextPostID,
+		    created: new Date(),
+		    modified: new Date(),
+		    title: "",
+		    body: ""
+	  	};
+		this.posts.push(newPost);
+	  let self = this;
+		let xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+		    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 201) {
+		        console.log("new post created successfully");
+				self.updateNextPostID();
+		    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 201) {
+		    	self.deleteFromPosts(newPost.postid);
+		    	window.alert("ERROR: could not create post at the server");
+		    	window.location.href = "http://localhost:3000/edit/";
+		    }
     }
-    this.http.delete<string>
-    (`${this.serverURL}/api/${username}/${postid}`, this.httpOptions)
-      .pipe(
-        catchError(this.handleError<string>('Delete Post', '', '/'))
-      )
-      .subscribe((res: string) => {
-        if (res != null) {
-          return;
-        } else {
-          alert('Delete Success!');
-          this.router.navigateByUrl('/');
-          this.posts.splice(index, 1);
-        }
-      }
-    );
+		let url = this.urlBase + this.username + "/" + (this.nextPostID).toString();
+
+		xhr.open("POST", url, true);
+		xhr.setRequestHeader("Content-type", "application/json");
+		console.log("new post JSON", JSON.stringify(newPost));
+
+		xhr.send(JSON.stringify(newPost)); 
+		return newPost;
+	}
+
+	updatePost(post: Post): void {
+		let postIndex = this.getPostIndex(post.postid);
+		if (postIndex != -1) {
+			this.posts[postIndex].title = post.title;
+			this.posts[postIndex].body = post.body;
+			this.posts[postIndex].modified = new Date();
+			let self = this;
+			let xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+			    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+			        console.log("post updated successfully");
+			    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 200) {
+			    	window.alert("ERROR: could not update post at the server");
+		    		window.location.href = "http://localhost:3000/edit/#/edit/" + (self.posts[postIndex].postid).toString();
+			    }
+			}
+			let url = this.urlBase + this.username + "/" + (this.posts[postIndex].postid).toString();
+
+			xhr.open("PUT", url, true);
+			xhr.setRequestHeader("Content-type", "application/json");
+			xhr.send(JSON.stringify(this.posts[postIndex])); 
+		}
+	}
+
+	deletePost(postid: number): void {
+		let postIndex = this.getPostIndex(postid);
+		if (postIndex != -1) {
+			let self = this;
+			let xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+			    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 204) {
+			        console.log("post deleted successfully");
+			    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 204) {
+			    	window.alert("ERROR: server can't handle this delete");
+		    		window.location.href = "http://localhost:3000/edit/";
+			    }
+			}
+			let url = this.urlBase + this.username + "/" + (this.posts[postIndex].postid).toString();
+			this.posts.splice(postIndex, 1);
+
+			xhr.open("DELETE", url, true);
+			xhr.send(); 
+		}
+	}
+
+	getPostIndex(id: number): number {
+		for (let i = 0; i < this.posts.length; i++) {
+		    if (this.posts[i].postid == id) {
+		    	return i;
+		    }
+		}
+		return -1;
+	}
+  
+  setNextPostID(nextId: number): void {
+    this.nextPostID = nextId;
   }
 
+	getNextPostID(): number {
+		return this.nextPostID;
+	}
 
+	updateNextPostID(): void {
+		this.nextPostID = this.nextPostID + 1;
+	}
+
+	deleteFromPosts(postid: number): void {
+		let postIndex = this.getPostIndex(postid);
+		if (postIndex != -1) {
+			this.posts.splice(postIndex, 1);
+		}
+	}
+
+  getUsernameFromCookie(): void {
+    let token = document.cookie.replace(/(?:(?:^|.*;\s*)jwt\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    console.log(token);
+    let base64Url = token.split('.')[1];
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    this.username = JSON.parse(atob(base64)).usr;
+  }
 }
-

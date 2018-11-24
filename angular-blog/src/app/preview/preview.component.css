@@ -1,0 +1,51 @@
+#preview-container {
+    font-family: 'OpenSans-Regular';
+    width: 45%;
+    height: 100%;
+    float: left;
+    text-align: center;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding-top: 40px;
+
+    /*border-left: 5px solid gray;*/
+  }
+  
+  #preview-header {
+    font-family: 'IndyPimp-Bold';
+    font-size: 2rem;
+    margin-bottom: 10px;
+    margin-top: 0;
+  }
+  
+  .button-style {
+    width: 100px;
+    height: 30px;
+    margin: 10px;
+    margin-bottom: 5px;
+    font-size: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #466670;
+    color: #ffffff;
+  }
+  
+  .button-style:hover {
+    background-color: #91c1d0;
+  }
+  
+  #markdown-container {
+    width: 50%;
+    text-align: center;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 5px 30px;
+    margin-top: 10px;
+    border-radius: 5px;
+  }
+  
+  #markdown-container {
+    text-align: left;
+  }
+  

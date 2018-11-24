@@ -1,11 +1,19 @@
-<button class="btn btn-primary btn-lg active" (click)="newPost()">New Post</button>
-<br>
-<br>
-<ul class="Post" style="list-style: none; padding: 0;">
- <li class="postList" *ngFor="let post of posts$ | async">
-   <a routerLink="/edit/{{post.postid}}" class="btn btn-light aLink">
-    <span class="aSpan">{{post.created | date: 'medium' }}</span> 
-    <span class="aSpan2">{{post.title}}</span>
-  </a>
- </li>
-</ul>
+<div id="list-container">
+  <div id="posts-container">
+    <h3 id="list-header">My Posts</h3>
+
+    <button type="button" class="btn button-style" id="new-post-button" (click)="newPost()">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i> New Post
+    </button>
+  </div>
+
+  <div id="post-container">
+    <ul id="postList">
+      <li *ngFor="let post of posts">
+        <a routerLink="/edit/{{post.postid}}">
+           <span class="badge"><i class="fa fa-clock-o" aria-hidden="true"></i> {{post.created | date:'M/d/yy, h:mm:ss a'}}</span> <span class="tit">{{post.title}}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+
 import { Post, BlogService } from '../blog.service';
+
 import { Parser, HtmlRenderer } from 'commonmark';
-import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-preview',
@@ -11,25 +12,37 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class PreviewComponent implements OnInit {
 
-  post: Post;
-  bodyHtml;
-  titleHtml;
+  private post: Post;
+  private markdownTitle = "";
+  private markdownBody = "";
 
-  constructor(private blogService: BlogService, private router: Router, private activatedRoute: ActivatedRoute) {
-    activatedRoute.params.subscribe(
-      (params) => this.getPost(params['id'])
-    );
-   }
-
-  getPost(postid: number) {
-    this.post = this.blogService.getPost('cs144', postid);
-    let reader = new Parser;
-    let writer = new HtmlRenderer;
-    this.bodyHtml = writer.render(reader.parse(this.post.body));
-    this.titleHtml = writer.render(reader.parse(this.post.title));
+  constructor(private router: Router,
+      private activatedRoute: ActivatedRoute,
+      private blogService: BlogService) {
   }
 
   ngOnInit() {
+    this.activatedRoute.params.subscribe(() => this.renderPreview());
+  }
+
+  renderPreview(): void {
+    let postid = this.activatedRoute.snapshot.paramMap.get('id');
+    this.post = this.blogService.getPost(Number(postid));
+
+    var reader = new Parser();
+    var writer = new HtmlRenderer();
+
+    if (this.post != null) {
+      var parsedTitle = reader.parse(this.post.title);
+      this.markdownTitle = writer.render(parsedTitle);
+
+      var parsedBody = reader.parse(this.post.body);
+      this.markdownBody = writer.render(parsedBody);
+    }
+  }
+
+  returnToEdit(): void {
+    this.router.navigate(['/edit/' + this.post.postid]);
   }
 
 }

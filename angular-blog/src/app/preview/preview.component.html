@@ -1,6 +1,16 @@
-<div routerLink="/edit/{{post.postid}}" class="btn btn-primary btn-lg active">Edit Post</div>
-<br>
-<br>
-<h3 [innerHTML]="titleHtml"></h3>
-<br>
-<div [innerHTML]="bodyHtml"></div>
+<div *ngIf="post">
+    <div id="preview-container">
+      <h3 id="preview-header">Preview Post</h3>
+      <hr>
+      <button type="submit" class="btn button-style" (click)="returnToEdit()">
+          <i class="fa fa-pencil" aria-hidden="true"></i> Edit
+      </button>
+  
+      <div id="markdown-wrapper">
+        <div id="markdown-container">
+          <div id="title" [innerHTML]=markdownTitle></div>
+          <div id="body" [innerHTML]=markdownBody></div>
+        </div>
+      </div>
+    </div>
+  </div>

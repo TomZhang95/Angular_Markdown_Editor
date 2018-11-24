@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html?v=${new Date().getTime()}',
-  styleUrls: ['./app.component.css?v=${new Date().getTime()}']
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'angular-blog';
+  title = 'i know nothing, Jon Snow';
 }
