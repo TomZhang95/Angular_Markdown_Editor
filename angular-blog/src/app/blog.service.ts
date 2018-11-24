@@ -47,6 +47,7 @@ export class BlogService {
             }
             self.nextPostID = nextPostID;
         }
+        console.log(4);
     };
 		let url = this.urlBase + this.username;
 		xhr.open('GET', url, true);
@@ -82,7 +83,8 @@ export class BlogService {
 		    	self.deleteFromPosts(newPost.postid);
 		    	window.alert("ERROR: could not create post at the server");
 		    	window.location.href = "http://localhost:3000/edit/";
-		    }
+        }
+        console.log(3);
     }
 		let url = this.urlBase + this.username + "/" + (this.nextPostID).toString();
 
@@ -108,7 +110,8 @@ export class BlogService {
 			    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 200) {
 			    	window.alert("ERROR: could not update post at the server");
 		    		window.location.href = "http://localhost:3000/edit/#/edit/" + (self.posts[postIndex].postid).toString();
-			    }
+          }
+          console.log("1");
 			}
 			let url = this.urlBase + this.username + "/" + (this.posts[postIndex].postid).toString();
 
@@ -129,7 +132,8 @@ export class BlogService {
 			    } else if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 204) {
 			    	window.alert("ERROR: server can't handle this delete");
 		    		window.location.href = "http://localhost:3000/edit/";
-			    }
+          }
+          console.log(2);
 			}
 			let url = this.urlBase + this.username + "/" + (this.posts[postIndex].postid).toString();
 			this.posts.splice(postIndex, 1);
