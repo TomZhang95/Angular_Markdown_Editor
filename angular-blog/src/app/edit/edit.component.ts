@@ -24,6 +24,14 @@ export class EditComponent implements OnInit {
 		this.activatedRoute.params.subscribe(() => this.getPost());
 	}
 
+	get title(): string {
+		return String(this.myEditPostForm.get('title'));
+  	}
+
+  	get body(): string {
+		return String(this.myEditPostForm.get('body'));
+  	}
+
 	delete(): void {
 		this.blogService.deletePost(this.post.postid);
 		this.router.navigate(['/']);
