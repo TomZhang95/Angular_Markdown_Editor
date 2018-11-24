@@ -170,7 +170,7 @@ export class BlogService {
   getUsernameFromCookie(): void {
 		let token = document.cookie.replace(/(?:(?:^|.*;\s*)jwt\s*\=\s*([^;]*).*$)|^.*$/, "$1");
 		if (token === null || token === '') {
-      window.location.href = 'http://localhost:3000/login?redirect=/editor';
+      window.location.href = '／login?redirect=/editor';
       return;
     }
     console.log(token);
